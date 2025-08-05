@@ -63,6 +63,73 @@ npm --version
 npm list
 ```
 
+### Starting from a Specific Row
+
+You can resume testing from any row in your CSV file using the `--start` (or `-s`) flag. This is particularly useful for:
+- **Resuming interrupted sessions** after system crashes or breaks
+- **Targeted testing** of specific data ranges
+- **Performance optimization** by processing smaller batches
+
+#### Command Syntax
+
+```bash
+npm run start -- --start <row_number>
+# or using the short flag
+npm run start -- -s <row_number>
+```
+
+> **Note**: The `--` is required to pass arguments through npm to the underlying script.
+
+#### Examples
+
+```bash
+# Start from row 25
+npm run start -- --start 25
+
+# Using short flag syntax
+npm run start -- -s 25
+
+# Start from the beginning (default behavior)
+npm run start
+```
+
+#### Interactive Output
+
+When you run the command, you'll see progress information and interactive prompts:
+
+```
+Total URL pairs found: 700
+▶️  Starting from pair number 25.
+
+🔎 Opening pair 25 of 700:
+   📄 Plan Name: My Awesome Plan Name
+   ➡️  Native: https://native-url.com/page
+   ⬅️  Legacy: https://legacy-url.com/page
+
+Press Enter to open the next pair...
+```
+
+#### Error Handling & Edge Cases
+
+The script includes robust validation:
+
+- **Invalid row numbers**: Automatically validates range (1 to total rows)
+- **Out-of-bounds values**: Displays helpful error messages with valid range
+- **Non-numeric input**: Gracefully handles invalid input types
+- **Empty CSV files**: Prevents execution with appropriate warnings
+
+```bash
+# Example error output for invalid row
+❌ Invalid starting row. Please choose a number between 1 and 700.
+```
+
+#### Performance Considerations
+
+- **Memory efficiency**: Starting from later rows reduces initial memory load
+- **Browser resource management**: Fewer total windows opened when resuming
+- **CSV parsing optimization**: Full file is still parsed, but processing is optimized
+- **Interrupt handling**: Use `Ctrl+C` to safely exit at any time
+
 ### 4. Project Structure
 
 ```
