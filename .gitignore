@@ -10,3 +10,5 @@ dist/
 .env
 // coverage reports
 coverage/
+data/Native IFPs and their Legacy Versions - 7-5-25.csv
+data/* 
