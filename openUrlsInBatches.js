@@ -1,25 +1,25 @@
 const fs = require('fs');
 const path = require('path');
 const { parse } = require('csv-parse/sync');
-const { default: open, apps } = require('open');
+
+const open = require('open');
+const { apps } = require('open');
+
 const readline = require('readline-sync');
-// NEW: Import the yargs library
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
-// --- NEW: Setup command-line argument handling ---
 const argv = yargs(hideBin(process.argv))
   .option('start', {
     alias: 's',
     type: 'number',
-    // CHANGED: Description translated to English
     description: 'The row number (pair) to start from',
-    default: 1 // Default is to start from the first line
+    default: 1
   })
   .argv;
 
-// ⚠️CHANGE file path here!!!
-const CSV_FILE = './data/Native IFPs and their Legacy Versions - 7-5-25.csv'; // change file here
+// ⚠️ Update the CSV_FILE path as needed
+  const CSV_FILE = './data/Native IFPs and their Legacy Versions - 7-5-25.csv';
 
 function readCsv(filePath) {
   const csvData = fs.readFileSync(filePath);
@@ -36,57 +36,43 @@ async function openPairsInNewWindows(rows) {
     edge: { app: { name: apps.edge, arguments: ['--new-window'] } },
   };
 
-  const selectedBrowser = browserOptions.chrome;
-
-  // --- CHANGED: Use the --start argument to define the starting index ---
-  // Subtract 1 because arrays are 0-indexed
   const startFromIndex = argv.start - 1;
-
   if (startFromIndex < 0 || startFromIndex >= rows.length) {
-    // CHANGED: Messages translated to English
-    console.error(`❌ Invalid starting row. Please choose a number between 1 and ${rows.length}.`);
+    console.error(`Invalid starting row. Choose between 1 and ${rows.length}.`);
     return;
   }
-  
-  // CHANGED: Messages translated to English
+
   console.log(`Total URL pairs found: ${rows.length}`);
   if (argv.start > 1) {
-    console.log(`▶️  Starting from pair number ${argv.start}.`);
+    console.log(`Starting from pair number ${argv.start}.`);
   }
 
-  // --- CHANGED: The loop now starts from the specified index ---
   for (let i = startFromIndex; i < rows.length; i++) {
-    const row = rows[i];
-    const native = row.websiteUrl?.trim();
-    const legacy = row.oldWebsiteUrl?.trim();
-    // NEW: Get the planName from the row
-    const planName = row.planName?.trim();
+    const { websiteUrl: nativeRaw, oldWebsiteUrl: legacyRaw, planName } = rows[i];
+    const native = nativeRaw?.trim();
+    const legacy = legacyRaw?.trim();
+    const name = planName?.trim() || 'N/A';
 
-    if (native && legacy) {
-      // --- CHANGED: Console output is now in English and includes planName ---
-      console.log(`\n🔎 Opening pair ${i + 1} of ${rows.length}:`);
-      console.log(`   📄 Plan Name: ${planName || 'N/A'}`); // Display planName, or 'N/A' if it's empty
-      console.log(`   ➡️  Native: ${native}`);
-      console.log(`   ⬅️  Legacy: ${legacy}`);
+    if (!native || !legacy) continue;
 
-      try {
-        await open(native, selectedBrowser);
-        await open(legacy, selectedBrowser);
-      } catch (error) {
-        // CHANGED: Message translated to English
-        console.error('❌ Error trying to open the browser.', error);
-        return;
-      }
-      
-      if (i < rows.length - 1) {
-        // CHANGED: Message translated to English
-        readline.question('Press Enter to open the next pair...');
-      }
+    console.log(`\nOpening pair ${i + 1}: ${name}`);
+    console.log(`  Native: ${native}`);
+    console.log(`  Legacy: ${legacy}`);
+
+    try {
+      await open(native, browserOptions.chrome);
+      await open(legacy, browserOptions.chrome);
+    } catch (err) {
+      console.error('Error opening browser:', err);
+      return;
+    }
+
+    if (i < rows.length - 1) {
+      readline.question('Press Enter to open the next pair...');
     }
   }
 
-  // CHANGED: Message translated to English
-  console.log('\n✅ All pairs have been opened.');
+  console.log('\nAll pairs have been opened.');
 }
 
 const csvPath = path.join(__dirname, CSV_FILE);
