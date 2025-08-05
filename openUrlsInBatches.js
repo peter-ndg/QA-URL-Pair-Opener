@@ -18,7 +18,8 @@ const argv = yargs(hideBin(process.argv))
   })
   .argv;
 
-const CSV_FILE = './Native IFPs and their Legacy Versions - Sheet2.csv';
+// ⚠️CHANGE file path here!!!
+const CSV_FILE = './data/Native IFPs and their Legacy Versions - 7-5-25.csv'; // change file here
 
 function readCsv(filePath) {
   const csvData = fs.readFileSync(filePath);
